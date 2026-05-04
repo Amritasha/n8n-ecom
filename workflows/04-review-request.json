@@ -1,0 +1,64 @@
+{
+  "name": "⭐ Post-Delivery Review Request",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0004-0004-0004-000000000001",
+      "name": "Order Fulfilled",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {
+        "topic": "orders/fulfilled"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0004-0004-0004-000000000002",
+      "name": "Wait 3 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "webhookId": "review-request-wait"
+    },
+    {
+      "id": "a1b2c3d4-0004-0004-0004-000000000003",
+      "name": "Send Review Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "parameters": {
+        "fromEmail": "hello@yourstore.com",
+        "toEmail": "={{ $('Order Fulfilled').item.json.email }}",
+        "subject": "How did we do? ⭐",
+        "contentType": "html",
+        "htmlContent": "<!DOCTYPE html><html><body style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px'><h2>How's your order, {{ $('Order Fulfilled').item.json.billing_address?.first_name || 'friend' }}?</h2><p>We hope your order #{{ $('Order Fulfilled').item.json.order_number }} arrived safely and you're loving it!</p><p>It would mean the world to us if you left a quick review. It takes less than 60 seconds:</p><table style='margin:30px 0'><tr><td style='padding:8px'><a href='YOUR_REVIEW_LINK' style='font-size:28px;text-decoration:none'>⭐⭐⭐⭐⭐</a></td></tr><tr><td><a href='YOUR_REVIEW_LINK' style='background:#000;color:#fff;padding:14px 28px;text-decoration:none;border-radius:4px;font-weight:bold;display:inline-block'>Leave a Review →</a></td></tr></table><p style='color:#666;font-size:14px'>Not happy with your order? Reply to this email and we'll make it right.</p></body></html>"
+      },
+      "credentials": {
+        "sendGridApi": {
+          "id": "4",
+          "name": "SendGrid account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Order Fulfilled": {
+      "main": [[{ "node": "Wait 3 Days", "type": "main", "index": 0 }]]
+    },
+    "Wait 3 Days": {
+      "main": [[{ "node": "Send Review Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "ecom" }, { "name": "reviews" }]
+}

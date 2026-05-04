@@ -1,0 +1,73 @@
+{
+  "name": "❌ Failed Payment → Slack Alert",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0005-0005-0005-000000000001",
+      "name": "Payment Failed",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {
+        "topic": "orders/payment_failure"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0005-0005-0005-000000000002",
+      "name": "Alert Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "channel": "#orders",
+        "text": "❌ *Payment Failed* on Order #{{ $json.order_number }}\n*Customer:* {{ $json.billing_address.first_name }} {{ $json.billing_address.last_name }}\n*Email:* {{ $json.email }}\n*Amount:* ${{ $json.total_price }}\n*Gateway:* {{ $json.payment_gateway }}\n*Error:* {{ $json.payment_gateway_names.join(', ') }}\n\nManually review: https://{{ $json.domain }}/admin/orders/{{ $json.id }}"
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0005-0005-0005-000000000003",
+      "name": "Email Customer",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [460, 480],
+      "parameters": {
+        "fromEmail": "hello@yourstore.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Action needed: payment issue on your order",
+        "contentType": "html",
+        "htmlContent": "<!DOCTYPE html><html><body style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px'><h2>Hi {{ $json.billing_address.first_name }},</h2><p>We weren't able to process your payment for order #{{ $json.order_number }}.</p><p>This can happen due to an expired card, insufficient funds, or a bank security check.</p><p style='margin:30px 0'><a href='https://{{ $json.domain }}/account/orders/{{ $json.id }}' style='background:#000;color:#fff;padding:14px 28px;text-decoration:none;border-radius:4px;font-weight:bold'>Update Payment →</a></p><p style='color:#666;font-size:14px'>Your items are held for 24 hours. Need help? Just reply to this email.</p></body></html>"
+      },
+      "credentials": {
+        "sendGridApi": {
+          "id": "4",
+          "name": "SendGrid account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Payment Failed": {
+      "main": [
+        [
+          { "node": "Alert Slack", "type": "main", "index": 0 },
+          { "node": "Email Customer", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "ecom" }, { "name": "payments" }]
+}

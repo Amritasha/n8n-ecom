@@ -1,0 +1,140 @@
+{
+  "name": "🛒 Abandoned Cart Recovery Email",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0003-0003-0003-000000000001",
+      "name": "Shopify Checkout Created",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {
+        "topic": "checkouts/create"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0003-0003-0003-000000000002",
+      "name": "Has Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Wait 1 Hour",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [680, 200],
+      "parameters": {
+        "amount": 1,
+        "unit": "hours"
+      },
+      "webhookId": "abandoned-cart-wait"
+    },
+    {
+      "id": "a1b2c3d4-0003-0003-0003-000000000004",
+      "name": "Check If Order Completed",
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [900, 200],
+      "parameters": {
+        "resource": "order",
+        "operation": "getAll",
+        "additionalFields": {
+          "email": "={{ $('Shopify Checkout Created').item.json.email }}",
+          "status": "any",
+          "createdAtMin": "={{ $('Shopify Checkout Created').item.json.created_at }}"
+        },
+        "limit": 1
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0003-0003-0003-000000000005",
+      "name": "Still Abandoned?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 200],
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "empty" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0003-0003-0003-000000000006",
+      "name": "Send Recovery Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [1340, 120],
+      "parameters": {
+        "fromEmail": "hello@yourstore.com",
+        "toEmail": "={{ $('Shopify Checkout Created').item.json.email }}",
+        "subject": "You left something behind 👀",
+        "contentType": "html",
+        "htmlContent": "<!DOCTYPE html><html><body style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px'><h2>Hey {{ $('Shopify Checkout Created').item.json.billing_address?.first_name || 'there' }}! 👋</h2><p>You left some items in your cart. Don't worry — we saved them for you.</p><p style='margin:30px 0'><a href='{{ $('Shopify Checkout Created').item.json.abandoned_checkout_url }}' style='background:#000;color:#fff;padding:14px 28px;text-decoration:none;border-radius:4px;font-weight:bold'>Complete Your Order →</a></p><p style='color:#666;font-size:14px'>This link will expire in 24 hours. Questions? Just reply to this email.</p></body></html>"
+      },
+      "credentials": {
+        "sendGridApi": {
+          "id": "4",
+          "name": "SendGrid account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Shopify Checkout Created": {
+      "main": [[{ "node": "Has Email?", "type": "main", "index": 0 }]]
+    },
+    "Has Email?": {
+      "main": [
+        [{ "node": "Wait 1 Hour", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Wait 1 Hour": {
+      "main": [[{ "node": "Check If Order Completed", "type": "main", "index": 0 }]]
+    },
+    "Check If Order Completed": {
+      "main": [[{ "node": "Still Abandoned?", "type": "main", "index": 0 }]]
+    },
+    "Still Abandoned?": {
+      "main": [
+        [{ "node": "Send Recovery Email", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "ecom" }, { "name": "retention" }]
+}

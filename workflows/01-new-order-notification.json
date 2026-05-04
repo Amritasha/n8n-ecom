@@ -1,0 +1,93 @@
+{
+  "name": "🛍️ New Order → Slack + Google Sheets",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Shopify Trigger",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {
+        "topic": "orders/paid"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0001-0001-0001-000000000002",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [480, 180],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "channel": "#orders",
+        "text": "🛒 *New Order #{{ $json.order_number }}*\n*Customer:* {{ $json.billing_address.first_name }} {{ $json.billing_address.last_name }}\n*Total:* ${{ $json.total_price }}\n*Items:* {{ $json.line_items.length }}\n*Email:* {{ $json.email }}"
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0001-0001-0001-000000000003",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [480, 420],
+      "parameters": {
+        "resource": "spreadsheet",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Orders",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Order ID": "={{ $json.id }}",
+            "Order Number": "={{ $json.order_number }}",
+            "Date": "={{ $json.created_at }}",
+            "Customer": "={{ $json.billing_address.first_name }} {{ $json.billing_address.last_name }}",
+            "Email": "={{ $json.email }}",
+            "Total": "={{ $json.total_price }}",
+            "Items": "={{ $json.line_items.length }}",
+            "Status": "={{ $json.financial_status }}"
+          }
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Shopify Trigger": {
+      "main": [
+        [
+          { "node": "Notify Slack", "type": "main", "index": 0 },
+          { "node": "Log to Google Sheets", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "ecom" }, { "name": "orders" }]
+}

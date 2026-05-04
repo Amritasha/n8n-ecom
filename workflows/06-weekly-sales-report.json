@@ -1,0 +1,85 @@
+{
+  "name": "📊 Weekly Sales Report → Email",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000001",
+      "name": "Every Monday 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 8 * * 1" }]
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000002",
+      "name": "Get Last 7 Days Orders",
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "parameters": {
+        "resource": "order",
+        "operation": "getAll",
+        "returnAll": true,
+        "additionalFields": {
+          "status": "any",
+          "financial_status": "paid",
+          "createdAtMin": "={{ DateTime.now().minus({ days: 7 }).toISO() }}"
+        }
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000003",
+      "name": "Calculate Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const orders = $input.all().map(i => i.json);\nconst totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0);\nconst totalOrders = orders.length;\nconst avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : 0;\nconst newCustomers = orders.filter(o => o.customer?.orders_count === 1).length;\nconst returningCustomers = totalOrders - newCustomers;\n\nconst productCounts = {};\nfor (const order of orders) {\n  for (const item of order.line_items || []) {\n    productCounts[item.title] = (productCounts[item.title] || 0) + item.quantity;\n  }\n}\nconst topProducts = Object.entries(productCounts)\n  .sort((a, b) => b[1] - a[1])\n  .slice(0, 5)\n  .map(([name, qty]) => `${name} (${qty} sold)`);\n\nconst weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });\nconst weekEnd = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });\n\nreturn [{ json: { totalRevenue: totalRevenue.toFixed(2), totalOrders, avgOrderValue, newCustomers, returningCustomers, topProducts, weekStart, weekEnd } }];"
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000004",
+      "name": "Send Report Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "parameters": {
+        "fromEmail": "reports@yourstore.com",
+        "toEmail": "owner@yourstore.com",
+        "subject": "📊 Weekly Sales Report ({{ $json.weekStart }} – {{ $json.weekEnd }})",
+        "contentType": "html",
+        "htmlContent": "<!DOCTYPE html><html><body style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333'><h2 style='border-bottom:2px solid #000;padding-bottom:10px'>Weekly Sales Report<br><small style='font-weight:normal;font-size:14px;color:#666'>{{ $json.weekStart }} – {{ $json.weekEnd }}</small></h2><table style='width:100%;border-collapse:collapse;margin:20px 0'><tr style='background:#f5f5f5'><td style='padding:12px;font-weight:bold'>Total Revenue</td><td style='padding:12px;font-size:24px;font-weight:bold'>${{ $json.totalRevenue }}</td></tr><tr><td style='padding:12px;font-weight:bold'>Total Orders</td><td style='padding:12px'>{{ $json.totalOrders }}</td></tr><tr style='background:#f5f5f5'><td style='padding:12px;font-weight:bold'>Avg Order Value</td><td style='padding:12px'>${{ $json.avgOrderValue }}</td></tr><tr><td style='padding:12px;font-weight:bold'>New Customers</td><td style='padding:12px'>{{ $json.newCustomers }}</td></tr><tr style='background:#f5f5f5'><td style='padding:12px;font-weight:bold'>Returning Customers</td><td style='padding:12px'>{{ $json.returningCustomers }}</td></tr></table><h3>Top Products</h3><ol>{{ $json.topProducts.map(p => '<li style=\"padding:4px 0\">' + p + '</li>').join('') }}</ol></body></html>"
+      },
+      "credentials": {
+        "sendGridApi": {
+          "id": "4",
+          "name": "SendGrid account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Monday 8am": {
+      "main": [[{ "node": "Get Last 7 Days Orders", "type": "main", "index": 0 }]]
+    },
+    "Get Last 7 Days Orders": {
+      "main": [[{ "node": "Calculate Metrics", "type": "main", "index": 0 }]]
+    },
+    "Calculate Metrics": {
+      "main": [[{ "node": "Send Report Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "ecom" }, { "name": "reporting" }]
+}

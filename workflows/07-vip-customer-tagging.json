@@ -1,0 +1,123 @@
+{
+  "name": "👑 Auto-Tag VIP Customers",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0007-0007-0007-000000000001",
+      "name": "Order Paid",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {
+        "topic": "orders/paid"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0007-0007-0007-000000000002",
+      "name": "Get Customer Details",
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "parameters": {
+        "resource": "customer",
+        "operation": "get",
+        "customerId": "={{ $json.customer.id }}"
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0007-0007-0007-000000000003",
+      "name": "Is VIP? ($500+ lifetime)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ parseFloat($json.total_spent) }}",
+              "rightValue": 500,
+              "operator": { "type": "number", "operation": "gte" }
+            },
+            {
+              "leftValue": "={{ ($json.tags || '').includes('VIP') }}",
+              "rightValue": false,
+              "operator": { "type": "boolean", "operation": "equal" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0007-0007-0007-000000000004",
+      "name": "Add VIP Tag",
+      "type": "n8n-nodes-base.shopify",
+      "typeVersion": 1,
+      "position": [900, 200],
+      "parameters": {
+        "resource": "customer",
+        "operation": "update",
+        "customerId": "={{ $('Get Customer Details').item.json.id }}",
+        "updateFields": {
+          "tags": "={{ ($('Get Customer Details').item.json.tags ? $('Get Customer Details').item.json.tags + ', ' : '') + 'VIP' }}"
+        }
+      },
+      "credentials": {
+        "shopifyApi": {
+          "id": "1",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0007-0007-0007-000000000005",
+      "name": "Notify Team",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [1120, 200],
+      "parameters": {
+        "resource": "message",
+        "operation": "post",
+        "channel": "#vip-customers",
+        "text": "👑 *New VIP Customer!*\n*{{ $('Get Customer Details').item.json.first_name }} {{ $('Get Customer Details').item.json.last_name }}*\n*Email:* {{ $('Get Customer Details').item.json.email }}\n*Lifetime spend:* ${{ $('Get Customer Details').item.json.total_spent }}\n*Total orders:* {{ $('Get Customer Details').item.json.orders_count }}\n\nConsider a personal thank-you or exclusive offer!"
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "2",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Order Paid": {
+      "main": [[{ "node": "Get Customer Details", "type": "main", "index": 0 }]]
+    },
+    "Get Customer Details": {
+      "main": [[{ "node": "Is VIP? ($500+ lifetime)", "type": "main", "index": 0 }]]
+    },
+    "Is VIP? ($500+ lifetime)": {
+      "main": [
+        [{ "node": "Add VIP Tag", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Add VIP Tag": {
+      "main": [[{ "node": "Notify Team", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "ecom" }, { "name": "customers" }]
+}
