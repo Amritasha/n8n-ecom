@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Bind n8n to Railway's dynamic PORT (shell expansion works here, ENV in Dockerfile does not)
+export N8N_PORT=${PORT:-5678}
+
 WORKFLOWS_DIR="/workflows"
 IMPORTED_FLAG="/home/node/.n8n/.workflows-imported"
 
