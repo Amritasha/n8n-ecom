@@ -10,6 +10,7 @@ N8N_HOST = "0.0.0.0"
 N8N_PROTOCOL = "https"
 N8N_BASIC_AUTH_ACTIVE = "true"
 N8N_PORT = "${{PORT}}"
+N8N_USER_FOLDER = "/data/n8n"
 
 [[volumes]]
-mountPath = "/home/node/.n8n"
+mountPath = "/data/n8n"
