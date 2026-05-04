@@ -6,10 +6,11 @@ ENV N8N_PROTOCOL=https
 ENV N8N_BASIC_AUTH_ACTIVE=true
 
 USER root
-RUN mkdir -p /workflows
+RUN apk add --no-cache su-exec && \
+    mkdir -p /workflows
 COPY workflows/ /workflows/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-USER node
+# Stay as root — entrypoint fixes volume permissions then drops to node
 ENTRYPOINT ["/entrypoint.sh"]
