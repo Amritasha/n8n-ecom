@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Bind n8n to Railway's dynamic PORT
+export N8N_PORT=${PORT:-5678}
+
 # Fix volume permissions
 mkdir -p /home/node/.n8n
 chmod -R 777 /home/node/.n8n
