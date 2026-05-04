@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-# Bind n8n to Railway's dynamic PORT
 export N8N_PORT=${PORT:-5678}
+export N8N_BASIC_AUTH_ACTIVE=true
 
 # Fix volume permissions — Railway mounts volumes as root
 mkdir -p /home/node/.n8n
@@ -16,7 +16,7 @@ chown -R node:node /home/node/.n8n
     echo "[bundle] Importing ecom workflow bundle..."
     for f in /workflows/*.json; do
       echo "[bundle] Importing: $f"
-      su-exec node n8n import:workflow --input="$f" || echo "[bundle] Warning: failed to import $f"
+      gosu node n8n import:workflow --input="$f" || echo "[bundle] Warning: failed to import $f"
     done
     touch "$IMPORTED_FLAG"
     echo "[bundle] Workflow import complete."
@@ -24,4 +24,4 @@ chown -R node:node /home/node/.n8n
 ) &
 
 echo "Starting n8n on port $N8N_PORT..."
-exec su-exec node n8n start
+exec gosu node n8n start
