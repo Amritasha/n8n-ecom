@@ -26,22 +26,28 @@ Self-host [n8n](https://n8n.io) on Railway with 7 pre-built Shopify automation w
 Hit the button above. Railway will clone this repo and build the Docker image.
 
 ### 2. Set environment variables
-In your Railway project → Variables, add:
 
-| Variable | Value |
-|----------|-------|
-| `N8N_PORT` | `${{PORT}}` |
+These are **already configured** in the image — you don't need to touch them:
+
+| Variable | Pre-set value |
+|----------|--------------|
 | `N8N_HOST` | `0.0.0.0` |
 | `N8N_PROTOCOL` | `https` |
-| `WEBHOOK_URL` | Your Railway domain (e.g. `https://xyz.up.railway.app`) |
-| `N8N_ENCRYPTION_KEY` | Random 32-char string |
 | `N8N_BASIC_AUTH_ACTIVE` | `true` |
-| `N8N_BASIC_AUTH_USER` | `admin` |
+| `N8N_PORT` | `$PORT` (Railway's dynamic port) |
+
+These are **yours to set** in Railway → Variables:
+
+| Variable | What to put |
+|----------|-------------|
+| `WEBHOOK_URL` | Your Railway domain e.g. `https://xyz.up.railway.app` |
+| `N8N_ENCRYPTION_KEY` | A random 32-char string — generate with `openssl rand -hex 16` |
+| `N8N_BASIC_AUTH_USER` | Your login username e.g. `admin` |
 | `N8N_BASIC_AUTH_PASSWORD` | Your chosen password |
-| `GENERIC_TIMEZONE` | e.g. `America/New_York` |
+| `GENERIC_TIMEZONE` | Your timezone e.g. `America/New_York` |
 
 ### 3. Add a volume for persistence
-In Railway → your service → Volumes → mount at `/home/node/.n8n`.
+In Railway → your service → Volumes → **Add Volume** → mount path: `/home/node/.n8n`
 This keeps your workflows and credentials safe across deploys.
 
 ---
