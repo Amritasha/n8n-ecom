@@ -6,3 +6,6 @@ healthcheckPath = "/healthz"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
+
+[[volumes]]
+mountPath = "/home/node/.n8n"
