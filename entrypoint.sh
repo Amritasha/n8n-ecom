@@ -9,33 +9,31 @@ chmod -R 777 "$N8N_USER_FOLDER"
 
 IMPORTED_FLAG="$N8N_USER_FOLDER/.workflows-imported"
 
-echo "[bundle] Flag path: $IMPORTED_FLAG"
-echo "[bundle] Flag exists: $([ -f "$IMPORTED_FLAG" ] && echo YES || echo NO)"
+echo "Starting n8n on port $N8N_PORT..."
+n8n start &
+N8N_PID=$!
 
-# Import workflows in background AFTER n8n starts and owner is set up
+# Forward SIGTERM/SIGINT to n8n
+trap "kill $N8N_PID; exit" TERM INT
+
 if [ ! -f "$IMPORTED_FLAG" ]; then
-  echo "[bundle] Starting import watcher in background..."
-  (
-    echo "[bundle] Waiting for n8n to start..."
-    # Wait for n8n to be ready
-    until curl -sf "http://localhost:$N8N_PORT/healthz" > /dev/null 2>&1; do
-      sleep 3
-    done
-    echo "[bundle] n8n is up. Waiting for owner account to be created..."
-    # Wait until the owner account is actually set up
-    until curl -sf "http://localhost:$N8N_PORT/rest/settings" | grep -q 'isInstanceOwnerSetUp.*true'; do
-      sleep 5
-    done
-    echo "[bundle] Owner account detected. Importing workflows..."
-    echo "[bundle] Importing ecom workflow bundle..."
-    for f in /workflows/*.json; do
-      echo "[bundle] Importing: $f"
-      n8n import:workflow --input="$f" && echo "[bundle] OK: $f" || echo "[bundle] Failed: $f"
-    done
-    touch "$IMPORTED_FLAG"
-    echo "[bundle] Done. Refresh your browser to see workflows."
-  ) &
+  echo "[bundle] Waiting for n8n to start..."
+  until curl -sf "http://localhost:$N8N_PORT/healthz" > /dev/null 2>&1; do
+    sleep 3
+  done
+
+  echo "[bundle] n8n is up. Waiting for owner account to be created..."
+  until curl -sf "http://localhost:$N8N_PORT/rest/settings" | grep -q 'isInstanceOwnerSetUp.*true'; do
+    sleep 5
+  done
+
+  echo "[bundle] Owner account detected. Importing workflows..."
+  for f in /workflows/*.json; do
+    echo "[bundle] Importing: $f"
+    n8n import:workflow --input="$f" && echo "[bundle] OK: $f" || echo "[bundle] Failed: $f"
+  done
+  touch "$IMPORTED_FLAG"
+  echo "[bundle] Done. Refresh your browser to see workflows."
 fi
 
-echo "Starting n8n on port $N8N_PORT..."
-exec n8n start
+wait $N8N_PID
