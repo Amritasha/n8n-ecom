@@ -18,7 +18,7 @@ if [ ! -f "$IMPORTED_FLAG" ]; then
       sleep 3
     done
     # Extra wait for owner account setup
-    sleep 60
+    sleep 120
     echo "[bundle] Importing ecom workflow bundle..."
     for f in /workflows/*.json; do
       echo "[bundle] Importing: $f"
