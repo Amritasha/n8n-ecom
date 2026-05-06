@@ -15,6 +15,14 @@ chmod -R 777 "$N8N_USER_FOLDER"
 
 IMPORTED_FLAG="$N8N_USER_FOLDER/.workflows-imported"
 
+# Railway containers block loopback (127.0.0.1 and ::1 both give conn_refused).
+# n8n binds to :: which covers all interfaces including eth0.
+# Use the container's real eth0 IP so curl can actually reach n8n.
+SELF_IP=$(ip -4 addr show scope global 2>/dev/null | grep inet | awk '{print $2}' | cut -d/ -f1 | head -1)
+[ -z "$SELF_IP" ] && SELF_IP=$(hostname -i 2>/dev/null | awk '{print $1}')
+[ -z "$SELF_IP" ] && SELF_IP="127.0.0.1"
+echo "[bundle] Container IP: $SELF_IP"
+
 echo "[bundle] Checking import flag: $IMPORTED_FLAG"
 if [ -f "$IMPORTED_FLAG" ]; then
   echo "[bundle] Flag exists — workflows already imported. Skipping import."
@@ -33,19 +41,19 @@ trap "echo '[bundle] Caught signal, shutting down n8n...'; kill $N8N_PID; exit" 
 if [ ! -f "$IMPORTED_FLAG" ]; then
   echo "[bundle] ---- Phase 1: Waiting for n8n HTTP to be ready ----"
   ATTEMPT=0
-  until curl -sf "http://[::1]:$N8N_PORT/healthz" > /dev/null 2>&1; do
+  until curl -sf "http://$SELF_IP:$N8N_PORT/healthz" > /dev/null 2>&1; do
     ATTEMPT=$((ATTEMPT + 1))
-    HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://[::1]:$N8N_PORT/healthz" 2>/dev/null || echo "conn_refused")
-    echo "[bundle] Health check attempt $ATTEMPT — HTTP $HTTP_CODE — retrying in 3s..."
+    HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://$SELF_IP:$N8N_PORT/healthz" 2>/dev/null || echo "conn_refused")
+    echo "[bundle] Health check attempt $ATTEMPT — http://$SELF_IP:$N8N_PORT/healthz — HTTP $HTTP_CODE — retrying in 3s..."
     sleep 3
   done
   echo "[bundle] n8n HTTP is up after $ATTEMPT attempts."
 
   echo "[bundle] ---- Phase 2: Waiting for owner account to be created ----"
   ATTEMPT=0
-  until curl -sf "http://[::1]:$N8N_PORT/rest/settings" | grep -q 'isInstanceOwnerSetUp.*true'; do
+  until curl -sf "http://$SELF_IP:$N8N_PORT/rest/settings" | grep -q 'isInstanceOwnerSetUp.*true'; do
     ATTEMPT=$((ATTEMPT + 1))
-    OWNER_STATUS=$(curl -sf "http://[::1]:$N8N_PORT/rest/settings" 2>/dev/null | grep -o 'isInstanceOwnerSetUp[^,}]*' || echo "unknown")
+    OWNER_STATUS=$(curl -sf "http://$SELF_IP:$N8N_PORT/rest/settings" 2>/dev/null | grep -o 'isInstanceOwnerSetUp[^,}]*' || echo "unknown")
     echo "[bundle] Owner check attempt $ATTEMPT — current: $OWNER_STATUS — retrying in 5s..."
     sleep 5
   done
