@@ -19,7 +19,7 @@ if [ ! -f "$IMPORTED_FLAG" ]; then
     done
     echo "[bundle] n8n is up. Waiting for owner account to be created..."
     # Wait until the owner account is actually set up
-    until curl -sf "http://localhost:$N8N_PORT/rest/settings" | grep -q '"isInstanceOwnerSetUp":true'; do
+    until curl -sf "http://localhost:$N8N_PORT/rest/settings" | grep -q '"isInstanceOwnerSetUp":\s*true'; do
       sleep 5
     done
     echo "[bundle] Owner account detected. Importing workflows..."
