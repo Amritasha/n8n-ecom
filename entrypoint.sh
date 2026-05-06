@@ -33,9 +33,9 @@ trap "echo '[bundle] Caught signal, shutting down n8n...'; kill $N8N_PID; exit" 
 if [ ! -f "$IMPORTED_FLAG" ]; then
   echo "[bundle] ---- Phase 1: Waiting for n8n HTTP to be ready ----"
   ATTEMPT=0
-  until curl -sf "http://127.0.0.1:$N8N_PORT/healthz" > /dev/null 2>&1; do
+  until curl -sf "http://[::1]:$N8N_PORT/healthz" > /dev/null 2>&1; do
     ATTEMPT=$((ATTEMPT + 1))
-    HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$N8N_PORT/healthz" 2>/dev/null || echo "conn_refused")
+    HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://[::1]:$N8N_PORT/healthz" 2>/dev/null || echo "conn_refused")
     echo "[bundle] Health check attempt $ATTEMPT — HTTP $HTTP_CODE — retrying in 3s..."
     sleep 3
   done
@@ -43,9 +43,9 @@ if [ ! -f "$IMPORTED_FLAG" ]; then
 
   echo "[bundle] ---- Phase 2: Waiting for owner account to be created ----"
   ATTEMPT=0
-  until curl -sf "http://127.0.0.1:$N8N_PORT/rest/settings" | grep -q 'isInstanceOwnerSetUp.*true'; do
+  until curl -sf "http://[::1]:$N8N_PORT/rest/settings" | grep -q 'isInstanceOwnerSetUp.*true'; do
     ATTEMPT=$((ATTEMPT + 1))
-    OWNER_STATUS=$(curl -sf "http://127.0.0.1:$N8N_PORT/rest/settings" 2>/dev/null | grep -o 'isInstanceOwnerSetUp[^,}]*' || echo "unknown")
+    OWNER_STATUS=$(curl -sf "http://[::1]:$N8N_PORT/rest/settings" 2>/dev/null | grep -o 'isInstanceOwnerSetUp[^,}]*' || echo "unknown")
     echo "[bundle] Owner check attempt $ATTEMPT — current: $OWNER_STATUS — retrying in 5s..."
     sleep 5
   done
