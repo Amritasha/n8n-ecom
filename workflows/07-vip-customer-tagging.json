@@ -1,4 +1,5 @@
 {
+  "id": "ORjHWOdB29G4jJ3k",
   "name": "👑 Auto-Tag VIP Customers",
   "nodes": [
     {
@@ -6,7 +7,10 @@
       "name": "Order Paid",
       "type": "n8n-nodes-base.shopifyTrigger",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "topic": "orders/paid"
       },
@@ -22,7 +26,10 @@
       "name": "Get Customer Details",
       "type": "n8n-nodes-base.shopify",
       "typeVersion": 1,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "resource": "customer",
         "operation": "get",
@@ -40,19 +47,28 @@
       "name": "Is VIP? ($500+ lifetime)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [680, 300],
+      "position": [
+        680,
+        300
+      ],
       "parameters": {
         "conditions": {
           "conditions": [
             {
               "leftValue": "={{ parseFloat($json.total_spent) }}",
               "rightValue": 500,
-              "operator": { "type": "number", "operation": "gte" }
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
             },
             {
               "leftValue": "={{ ($json.tags || '').includes('VIP') }}",
               "rightValue": false,
-              "operator": { "type": "boolean", "operation": "equal" }
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
             }
           ],
           "combinator": "and"
@@ -64,7 +80,10 @@
       "name": "Add VIP Tag",
       "type": "n8n-nodes-base.shopify",
       "typeVersion": 1,
-      "position": [900, 200],
+      "position": [
+        900,
+        200
+      ],
       "parameters": {
         "resource": "customer",
         "operation": "update",
@@ -85,7 +104,10 @@
       "name": "Notify Team",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2,
-      "position": [1120, 200],
+      "position": [
+        1120,
+        200
+      ],
       "parameters": {
         "resource": "message",
         "operation": "post",
@@ -102,22 +124,61 @@
   ],
   "connections": {
     "Order Paid": {
-      "main": [[{ "node": "Get Customer Details", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Get Customer Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Get Customer Details": {
-      "main": [[{ "node": "Is VIP? ($500+ lifetime)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Is VIP? ($500+ lifetime)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Is VIP? ($500+ lifetime)": {
       "main": [
-        [{ "node": "Add VIP Tag", "type": "main", "index": 0 }],
+        [
+          {
+            "node": "Add VIP Tag",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     },
     "Add VIP Tag": {
-      "main": [[{ "node": "Notify Team", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Notify Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
-  "tags": [{ "name": "ecom" }, { "name": "customers" }]
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ecom"
+    },
+    {
+      "name": "customers"
+    }
+  ]
 }

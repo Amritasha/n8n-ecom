@@ -1,4 +1,5 @@
 {
+  "id": "89BrwZgIlqpgAFFY",
   "name": "⭐ Post-Delivery Review Request",
   "nodes": [
     {
@@ -6,7 +7,10 @@
       "name": "Order Fulfilled",
       "type": "n8n-nodes-base.shopifyTrigger",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "topic": "orders/fulfilled"
       },
@@ -22,7 +26,10 @@
       "name": "Wait 3 Days",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "amount": 3,
         "unit": "days"
@@ -34,7 +41,10 @@
       "name": "Send Review Email",
       "type": "n8n-nodes-base.sendGrid",
       "typeVersion": 1,
-      "position": [680, 300],
+      "position": [
+        680,
+        300
+      ],
       "parameters": {
         "fromEmail": "hello@yourstore.com",
         "toEmail": "={{ $('Order Fulfilled').item.json.email }}",
@@ -52,13 +62,38 @@
   ],
   "connections": {
     "Order Fulfilled": {
-      "main": [[{ "node": "Wait 3 Days", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Wait 3 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Wait 3 Days": {
-      "main": [[{ "node": "Send Review Email", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Send Review Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
-  "tags": [{ "name": "ecom" }, { "name": "reviews" }]
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ecom"
+    },
+    {
+      "name": "reviews"
+    }
+  ]
 }

@@ -1,4 +1,5 @@
 {
+  "id": "hjFt2LuHoBYBniWd",
   "name": "🛒 Abandoned Cart Recovery Email",
   "nodes": [
     {
@@ -6,7 +7,10 @@
       "name": "Shopify Checkout Created",
       "type": "n8n-nodes-base.shopifyTrigger",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "topic": "checkouts/create"
       },
@@ -22,14 +26,20 @@
       "name": "Has Email?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "conditions": {
           "conditions": [
             {
               "leftValue": "={{ $json.email }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty" }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
             }
           ],
           "combinator": "and"
@@ -41,7 +51,10 @@
       "name": "Wait 1 Hour",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1,
-      "position": [680, 200],
+      "position": [
+        680,
+        200
+      ],
       "parameters": {
         "amount": 1,
         "unit": "hours"
@@ -53,7 +66,10 @@
       "name": "Check If Order Completed",
       "type": "n8n-nodes-base.shopify",
       "typeVersion": 1,
-      "position": [900, 200],
+      "position": [
+        900,
+        200
+      ],
       "parameters": {
         "resource": "order",
         "operation": "getAll",
@@ -76,14 +92,20 @@
       "name": "Still Abandoned?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1120, 200],
+      "position": [
+        1120,
+        200
+      ],
       "parameters": {
         "conditions": {
           "conditions": [
             {
               "leftValue": "={{ $json.id }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "empty" }
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
             }
           ],
           "combinator": "and"
@@ -95,7 +117,10 @@
       "name": "Send Recovery Email",
       "type": "n8n-nodes-base.sendGrid",
       "typeVersion": 1,
-      "position": [1340, 120],
+      "position": [
+        1340,
+        120
+      ],
       "parameters": {
         "fromEmail": "hello@yourstore.com",
         "toEmail": "={{ $('Shopify Checkout Created').item.json.email }}",
@@ -113,28 +138,73 @@
   ],
   "connections": {
     "Shopify Checkout Created": {
-      "main": [[{ "node": "Has Email?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Has Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Has Email?": {
       "main": [
-        [{ "node": "Wait 1 Hour", "type": "main", "index": 0 }],
+        [
+          {
+            "node": "Wait 1 Hour",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     },
     "Wait 1 Hour": {
-      "main": [[{ "node": "Check If Order Completed", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Check If Order Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Check If Order Completed": {
-      "main": [[{ "node": "Still Abandoned?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Still Abandoned?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Still Abandoned?": {
       "main": [
-        [{ "node": "Send Recovery Email", "type": "main", "index": 0 }],
+        [
+          {
+            "node": "Send Recovery Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
-  "tags": [{ "name": "ecom" }, { "name": "retention" }]
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ecom"
+    },
+    {
+      "name": "retention"
+    }
+  ]
 }

@@ -1,4 +1,5 @@
 {
+  "id": "lCQslShLJWPLqcqW",
   "name": "🛍️ New Order → Slack + Google Sheets",
   "nodes": [
     {
@@ -6,7 +7,10 @@
       "name": "Shopify Trigger",
       "type": "n8n-nodes-base.shopifyTrigger",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "topic": "orders/paid"
       },
@@ -22,7 +26,10 @@
       "name": "Notify Slack",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2,
-      "position": [480, 180],
+      "position": [
+        480,
+        180
+      ],
       "parameters": {
         "resource": "message",
         "operation": "post",
@@ -41,7 +48,10 @@
       "name": "Log to Google Sheets",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4,
-      "position": [480, 420],
+      "position": [
+        480,
+        420
+      ],
       "parameters": {
         "resource": "spreadsheet",
         "operation": "appendOrUpdate",
@@ -81,13 +91,30 @@
     "Shopify Trigger": {
       "main": [
         [
-          { "node": "Notify Slack", "type": "main", "index": 0 },
-          { "node": "Log to Google Sheets", "type": "main", "index": 0 }
+          {
+            "node": "Notify Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
-  "tags": [{ "name": "ecom" }, { "name": "orders" }]
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ecom"
+    },
+    {
+      "name": "orders"
+    }
+  ]
 }

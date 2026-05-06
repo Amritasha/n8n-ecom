@@ -1,4 +1,5 @@
 {
+  "id": "K3paOp6L1ZMzEVmr",
   "name": "❌ Failed Payment → Slack Alert",
   "nodes": [
     {
@@ -6,7 +7,10 @@
       "name": "Payment Failed",
       "type": "n8n-nodes-base.shopifyTrigger",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "topic": "orders/payment_failure"
       },
@@ -22,7 +26,10 @@
       "name": "Alert Slack",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "resource": "message",
         "operation": "post",
@@ -41,7 +48,10 @@
       "name": "Email Customer",
       "type": "n8n-nodes-base.sendGrid",
       "typeVersion": 1,
-      "position": [460, 480],
+      "position": [
+        460,
+        480
+      ],
       "parameters": {
         "fromEmail": "hello@yourstore.com",
         "toEmail": "={{ $json.email }}",
@@ -61,13 +71,30 @@
     "Payment Failed": {
       "main": [
         [
-          { "node": "Alert Slack", "type": "main", "index": 0 },
-          { "node": "Email Customer", "type": "main", "index": 0 }
+          {
+            "node": "Alert Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Customer",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
-  "tags": [{ "name": "ecom" }, { "name": "payments" }]
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ecom"
+    },
+    {
+      "name": "payments"
+    }
+  ]
 }

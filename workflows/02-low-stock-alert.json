@@ -1,4 +1,5 @@
 {
+  "id": "JYTghPthcr6QuZRG",
   "name": "⚠️ Low Stock Alert → Slack",
   "nodes": [
     {
@@ -6,10 +7,18 @@
       "name": "Run Daily at 9am",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "rule": {
-          "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }]
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
         }
       }
     },
@@ -18,7 +27,10 @@
       "name": "Get All Products",
       "type": "n8n-nodes-base.shopify",
       "typeVersion": 1,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "resource": "product",
         "operation": "getAll",
@@ -36,7 +48,10 @@
       "name": "Split Variants",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [680, 300],
+      "position": [
+        680,
+        300
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "jsCode": "const lowStockThreshold = 5;\nconst items = $input.all();\nconst lowStock = [];\n\nfor (const item of items) {\n  const product = item.json;\n  for (const variant of product.variants || []) {\n    if (variant.inventory_quantity !== null && variant.inventory_quantity <= lowStockThreshold) {\n      lowStock.push({\n        json: {\n          product_title: product.title,\n          variant_title: variant.title,\n          sku: variant.sku,\n          inventory: variant.inventory_quantity,\n          product_id: product.id\n        }\n      });\n    }\n  }\n}\n\nreturn lowStock;"
@@ -47,15 +62,25 @@
       "name": "Any Low Stock?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [900, 300],
+      "position": [
+        900,
+        300
+      ],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
               "leftValue": "={{ $input.all().length }}",
               "rightValue": 0,
-              "operator": { "type": "number", "operation": "gt" }
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
             }
           ],
           "combinator": "and"
@@ -67,7 +92,10 @@
       "name": "Build Alert Message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1120, 200],
+      "position": [
+        1120,
+        200
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "jsCode": "const items = $input.all();\nlet message = '⚠️ *Low Stock Alert* — ' + items.length + ' variant(s) need restocking:\\n\\n';\nfor (const item of items) {\n  const d = item.json;\n  message += `• *${d.product_title}* (${d.variant_title}) — ${d.inventory} left (SKU: ${d.sku})\\n`;\n}\nreturn [{ json: { message } }];"
@@ -78,7 +106,10 @@
       "name": "Slack Alert",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2,
-      "position": [1340, 200],
+      "position": [
+        1340,
+        200
+      ],
       "parameters": {
         "resource": "message",
         "operation": "post",
@@ -95,25 +126,72 @@
   ],
   "connections": {
     "Run Daily at 9am": {
-      "main": [[{ "node": "Get All Products", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Get All Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Get All Products": {
-      "main": [[{ "node": "Split Variants", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Split Variants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Split Variants": {
-      "main": [[{ "node": "Any Low Stock?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Any Low Stock?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Any Low Stock?": {
       "main": [
-        [{ "node": "Build Alert Message", "type": "main", "index": 0 }],
+        [
+          {
+            "node": "Build Alert Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     },
     "Build Alert Message": {
-      "main": [[{ "node": "Slack Alert", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
-  "tags": [{ "name": "ecom" }, { "name": "inventory" }]
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ecom"
+    },
+    {
+      "name": "inventory"
+    }
+  ]
 }
