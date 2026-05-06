@@ -9,8 +9,12 @@ chmod -R 777 "$N8N_USER_FOLDER"
 
 IMPORTED_FLAG="$N8N_USER_FOLDER/.workflows-imported"
 
+echo "[bundle] Flag path: $IMPORTED_FLAG"
+echo "[bundle] Flag exists: $([ -f "$IMPORTED_FLAG" ] && echo YES || echo NO)"
+
 # Import workflows in background AFTER n8n starts and owner is set up
 if [ ! -f "$IMPORTED_FLAG" ]; then
+  echo "[bundle] Starting import watcher in background..."
   (
     echo "[bundle] Waiting for n8n to start..."
     # Wait for n8n to be ready
