@@ -35,20 +35,21 @@ These are **already configured** in the image — you don't need to touch them:
 | `N8N_PROTOCOL` | `https` |
 | `N8N_BASIC_AUTH_ACTIVE` | `true` |
 | `N8N_PORT` | `$PORT` (Railway's dynamic port) |
+| `N8N_PROXY_HOPS` | `1` |
+| `N8N_USER_FOLDER` | `/data/n8n` |
+| `WEBHOOK_URL` | `https://${{RAILWAY_PUBLIC_DOMAIN}}` (auto-resolves to your Railway domain) |
+| `N8N_BASIC_AUTH_USER` | `admin` (override if you want a different username) |
+| `GENERIC_TIMEZONE` | `America/New_York` (override for your timezone) |
 
 These are **yours to set** in Railway → Variables:
 
 | Variable | What to put |
 |----------|-------------|
-| `WEBHOOK_URL` | Your Railway domain e.g. `https://xyz.up.railway.app` |
 | `N8N_ENCRYPTION_KEY` | A random 32-char string — generate with `openssl rand -hex 16` |
-| `N8N_BASIC_AUTH_USER` | Your login username e.g. `admin` |
 | `N8N_BASIC_AUTH_PASSWORD` | Your chosen password |
-| `GENERIC_TIMEZONE` | Your timezone e.g. `America/New_York` |
 
-### 3. Add a volume for persistence
-In Railway → your service → Volumes → **Add Volume** → mount path: `/home/node/.n8n`
-This keeps your workflows and credentials safe across deploys.
+### 3. Volume for persistence
+The template auto-mounts a volume at `/data/n8n`. No manual setup needed — your workflows and credentials persist across deploys.
 
 ---
 

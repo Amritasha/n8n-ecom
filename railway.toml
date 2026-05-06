@@ -13,6 +13,8 @@ N8N_PORT = "${{PORT}}"
 N8N_USER_FOLDER = "/data/n8n"
 N8N_PROXY_HOPS = "1"
 WEBHOOK_URL = "https://${{RAILWAY_PUBLIC_DOMAIN}}"
+N8N_BASIC_AUTH_USER = "admin"
+GENERIC_TIMEZONE = "America/New_York"
 
 [[volumes]]
 mountPath = "/data/n8n"
