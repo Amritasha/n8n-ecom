@@ -61,6 +61,8 @@ The template auto-mounts a volume at `/data/n8n`. No manual setup needed — you
 4. Add your credentials (Shopify, Slack, SendGrid, Google Sheets) under **Credentials**
 5. Open each workflow, connect your credentials, and hit **Activate**
 
+> **Note:** If you try to run a workflow before adding credentials you'll see an error like _"Credential with ID 1 does not exist"_ — this is expected. The workflows ship with placeholder credential references. Just add your credentials under the **Credentials** tab, open the workflow, select your credential in each node that needs one, and activate.
+
 ---
 
 ## Credentials you'll need
